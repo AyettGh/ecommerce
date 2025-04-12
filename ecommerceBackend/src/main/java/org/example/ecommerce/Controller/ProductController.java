@@ -1,0 +1,88 @@
+package org.example.ecommerce.Controller;
+
+import jakarta.persistence.EntityNotFoundException;
+import org.example.ecommerce.Entity.Product;
+import org.example.ecommerce.Service.ServiceImpl.ProductService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.List;
+
+@RestController
+@RequestMapping("/ecommerce")
+public class ProductController {
+    @Autowired
+    private ProductService productService;
+
+    @GetMapping("/allproduct")
+    public List<Product> getALlProduct()
+    {
+        return productService.getAll();
+    }
+
+    @GetMapping("/getproduct/{id}")
+    public Product getProductById(@PathVariable Long id)
+    {
+        return productService.getProductById(id).orElseThrow(
+                ()-> new EntityNotFoundException("no product is found")
+        );
+    }
+
+    @PostMapping("/addproduct")
+    public Product addProduct(@RequestBody Product product)
+    {
+        return productService.addProduct(product);
+    }
+
+    @DeleteMapping("/deleteproducts")
+    public void deleteproduct()
+    {
+        productService.deleteAllProduct();
+
+    }
+    @DeleteMapping("/deleteproduct/{id}")
+    public ResponseEntity<?> deleteProductById(@RequestBody Product product,@PathVariable Long id)
+    {
+        if (productService.exitById(id))
+        {
+            productService.deleteProductById(id);
+            HashMap<Product,String> map=new HashMap<>();
+            map.put(product," this product is deleted");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(map);
+        }
+        else {
+            HashMap<String,String> map=new HashMap<>();
+            map.put("product"," not found");
+            return  ResponseEntity.status(HttpStatus.NOT_FOUND).body(map);
+        }
+
+    }
+
+    @PutMapping("/updateproduct/{id}")
+    public ResponseEntity<?> updateProduct(@RequestBody Product product,@PathVariable Long id)
+    {
+        if(productService.exitById(id))
+        {
+            Product product1=productService.getProductById(id).orElseThrow(
+                    ()->new EntityNotFoundException("product not found")
+            );
+            product1.setName(product.getName());
+            product1.setDescription(product.getDescription());
+            product1.setCategory(product.getCategory());
+            product1.setPrice(product.getPrice());
+            product1.setCartItems(product.getCartItems());
+            product1.setStock(product.getStock());
+            productService.addProduct(product1);
+            return ResponseEntity.ok().body(product1);
+        }
+        else {
+            HashMap<String,String> map=new HashMap<>();
+            map.put("product"," not found");
+            return  ResponseEntity.status(HttpStatus.NOT_FOUND).body(map);
+        }
+    }
+
+}

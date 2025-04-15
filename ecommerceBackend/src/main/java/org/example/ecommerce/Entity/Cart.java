@@ -1,5 +1,6 @@
 package org.example.ecommerce.Entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
@@ -15,6 +16,7 @@ public class Cart implements Serializable {
     private Customer customer;
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
+    @JsonBackReference("cart-cartItem")
     private List<CartItem> items;
 
     public Customer getCustomer() {

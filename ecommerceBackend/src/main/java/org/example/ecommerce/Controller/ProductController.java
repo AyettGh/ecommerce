@@ -1,15 +1,21 @@
 package org.example.ecommerce.Controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import org.example.ecommerce.Entity.Product;
 import org.example.ecommerce.Service.ServiceImpl.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
+import java.util.Base64;
+import java.util.Optional;
+
 
 @RestController
 @RequestMapping("/ecommerce")
@@ -82,6 +88,34 @@ public class ProductController {
             HashMap<String,String> map=new HashMap<>();
             map.put("product"," not found");
             return  ResponseEntity.status(HttpStatus.NOT_FOUND).body(map);
+        }
+    }
+
+    @PostMapping(value = "/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> addProductWithImage(@RequestPart("product") String productJson,
+                                                 @RequestPart("image") MultipartFile imageFile) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            Product product = objectMapper.readValue(productJson, Product.class);
+            product.setImage(imageFile.getBytes());
+
+            Product savedProduct = productService.addProduct(product);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedProduct);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading image: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/productimage/{id}")
+    public ResponseEntity<?> getProductImage(@PathVariable Long id) {
+        Optional<Product> optionalProduct = productService.getProductById(id);
+        if (optionalProduct.isPresent()) {
+            byte[] imageBytes = optionalProduct.get().getImage();
+            String base64Image = Base64.getEncoder().encodeToString(imageBytes);
+            return ResponseEntity.ok().body(base64Image);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found");
         }
     }
 

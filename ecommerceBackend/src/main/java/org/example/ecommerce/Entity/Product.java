@@ -1,5 +1,6 @@
 package org.example.ecommerce.Entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
@@ -15,7 +16,11 @@ public class Product implements Serializable {
     private Double price;
     private Integer stock;
     private String category;
+    @Lob
+    private byte[] image;
+
     @OneToMany(mappedBy = "product")
+    @JsonManagedReference("product-cartItem")
     private List<CartItem> cartItems;
 
     public List<CartItem> getCartItems() {
@@ -35,6 +40,14 @@ public class Product implements Serializable {
         this.price = price;
         this.stock = stock;
         this.category = category;
+    }
+
+    public byte[] getImage() {
+        return image;
+    }
+
+    public void setImage(byte[] image) {
+        this.image = image;
     }
 
     public Long getId() {

@@ -14,16 +14,15 @@ public class CartItem implements Serializable {
     private Double subTotal;
 
     @ManyToOne
-    @JsonBackReference
+    @JsonBackReference("product-cartItem")
     @JoinColumn(name = "product_id")
     private Product product;
     @ManyToOne
-    @JsonBackReference
     @JoinColumn(name = "order_id")
     private Orders order;
 
     @ManyToOne
-    @JsonBackReference
+    @JsonBackReference("cart-cartItem")
     @JoinColumn(name = "cart_id")
     private Cart cart;
 
